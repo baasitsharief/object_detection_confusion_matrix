@@ -1,6 +1,7 @@
 import glob
 import os
 import numpy as np
+import pandas as pd
 
 IOU_THRESHOLD = 0.5
 
@@ -28,6 +29,10 @@ def main():
 	os.chdir(filename_path)
 	filenames = glob.glob("*.txt")
 	os.chdir(base_path)
+	with open("class9.txt", "r") as f_t:
+		classnames = f_t.readlines()
+	classnames = [x.strip() for x in classnames]
+	class_dict = dict((classnames[i],i) for i in range(9))
 	for file in filenames:
 		gt_path = "inputs/ground-truth/"+file
 		with open(gt_path, "r") as f_gt:
@@ -45,10 +50,24 @@ def main():
 				iou = compute_iou(groundtruth_box, detection_box)
 				   
 				if iou > IOU_THRESHOLD:
-					confusion_matrix[int(groundtruth_box[0])][int(detection_box[0])] += 1
-	confusion_matrix = confusion_matrix/np.linalg.norm(confusion_matrix, axis = 0)
-	np.savetxt("confusion_matrix.csv", confusion_matrix, delimiter=",")
-	print(confusion_matrix)
+					confusion_matrix[int(class_dict[groundtruth_box[0]])][int(class_dict[detection_box[0]])] += 1
+					break
+				#confusion_matrix[n][int(groundtruth_box[0])] += 1
+		for i in range(9):
+			for j in range(9):
+				confusion_matrix[i][j] = int(confusion_matrix[i][j])
+	confusion_matrix = confusion_matrix/np.sum(confusion_matrix, axis = 0)
+	d = {"gt / pred": classnames}
+	temp1 = pd.DataFrame(data = d)
+	d.clear()
+	for i in range(9):
+		d.update({classnames[i] : confusion_matrix[i]})
+		temp = pd.DataFrame(data = d)
+		temp1 = pd.concat([temp1,temp], axis = 1)
+		d.clear()
+	temp1.to_csv("confusion_matrix.csv")
+	#print(confusion_matrix)
+	print(temp1)
 
 if __name__ == '__main__':
 	main()
