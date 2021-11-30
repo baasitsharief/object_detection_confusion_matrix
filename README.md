@@ -2,3 +2,16 @@
 Python script to create a confusion matrix using the ground truth and detection result annotations in VOC format saved in a text for each image. The confusion matrix is saved in a csv file.
 
 Note: Check the input folder to see the expected input
+
+Requires - 
+
+```
+pandas
+numpy
+```
+
+After moving the inputs just run
+
+```
+python main.py
+```
